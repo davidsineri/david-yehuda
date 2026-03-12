@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingBag, Heart, Star, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Heart, Star, ArrowLeft, Users, MapPin, Clock } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { Product } from '../../types';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [showGroupBuyModal, setShowGroupBuyModal] = useState(false);
   
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -94,29 +96,40 @@ export default function ProductDetail() {
               <p className="text-sm font-bold text-stone-400">Stok: {product.stock > 0 ? product.stock : 'Tersedia'}</p>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    for (let i = 0; i < quantity; i++) addToCart(product);
+                    alert('Berhasil ditambahkan ke keranjang!');
+                  }}
+                  className="flex-1 bg-black text-white py-4 rounded-full font-bold text-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ShoppingBag size={20} />
+                  Tambah ke Keranjang
+                </button>
+                <button 
+                  onClick={() => {
+                    if (isInWishlist(product.id)) removeFromWishlist(product.id);
+                    else addToWishlist(product);
+                  }}
+                  className={`w-16 h-16 rounded-full flex items-center justify-center border-2 transition-colors ${
+                    isInWishlist(product.id) 
+                      ? 'border-red-500 bg-red-50 text-red-500' 
+                      : 'border-stone-200 text-stone-400 hover:border-black hover:text-black'
+                  }`}
+                >
+                  <Heart size={24} className={isInWishlist(product.id) ? 'fill-current' : ''} />
+                </button>
+              </div>
+
+              {/* Beli Bareng Button */}
               <button 
-                onClick={() => {
-                  for (let i = 0; i < quantity; i++) addToCart(product);
-                  alert('Berhasil ditambahkan ke keranjang!');
-                }}
-                className="flex-1 bg-black text-white py-4 rounded-full font-bold text-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                onClick={() => setShowGroupBuyModal(true)}
+                className="w-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 py-4 rounded-full font-bold text-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
               >
-                <ShoppingBag size={20} />
-                Tambah ke Keranjang
-              </button>
-              <button 
-                onClick={() => {
-                  if (isInWishlist(product.id)) removeFromWishlist(product.id);
-                  else addToWishlist(product);
-                }}
-                className={`w-16 h-16 rounded-full flex items-center justify-center border-2 transition-colors ${
-                  isInWishlist(product.id) 
-                    ? 'border-red-500 bg-red-50 text-red-500' 
-                    : 'border-stone-200 text-stone-400 hover:border-black hover:text-black'
-                }`}
-              >
-                <Heart size={24} className={isInWishlist(product.id) ? 'fill-current' : ''} />
+                <Users size={20} />
+                Beli Bareng (Patungan Ongkir)
               </button>
             </div>
           </div>
@@ -147,6 +160,129 @@ export default function ProductDetail() {
           </div>
         )}
       </div>
+
+      {/* Group Buy Modal */}
+      <AnimatePresence>
+        {showGroupBuyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white w-full max-w-2xl rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+              <div className="bg-emerald-600 p-8 text-white relative shrink-0">
+                <button 
+                  onClick={() => setShowGroupBuyModal(false)} 
+                  className="absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                <h3 className="text-3xl font-black italic mb-2">BELI BARENG</h3>
+                <p className="text-emerald-100 font-medium">Gabung dengan pembeli lain di kotamu untuk patungan ongkos kirim dari Papua.</p>
+              </div>
+
+              <div className="p-8 overflow-y-auto flex-grow space-y-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-xl text-black">Grup Aktif di Sekitarmu</h4>
+                  <div className="flex items-center gap-1 text-stone-500 text-sm font-bold bg-stone-100 px-3 py-1 rounded-full">
+                    <MapPin size={14} /> Jakarta Selatan
+                  </div>
+                </div>
+
+                {/* Mock Group 1 */}
+                <div className="border-2 border-emerald-100 bg-emerald-50/50 rounded-[24px] p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h5 className="font-black text-lg italic text-emerald-900">Grup Kakak Budi</h5>
+                      <p className="text-sm text-emerald-700 flex items-center gap-1 mt-1">
+                        <Clock size={14} /> Berangkat dalam 2 hari
+                      </p>
+                    </div>
+                    <span className="bg-emerald-200 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                      Kapasitas 80%
+                    </span>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm font-bold text-emerald-800 mb-2">
+                      <span>Terkumpul: 8kg</span>
+                      <span>Target: 10kg</span>
+                    </div>
+                    <div className="w-full bg-emerald-200 rounded-full h-3">
+                      <div className="bg-emerald-500 h-3 rounded-full" style={{ width: '80%' }}></div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-6 pt-6 border-t border-emerald-200/50">
+                    <div>
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest">Estimasi Ongkir</p>
+                      <p className="text-xl font-black text-emerald-900">Rp 15.000 <span className="text-sm font-medium line-through text-emerald-600/50">Rp 100.000</span></p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        alert('Berhasil bergabung dengan grup Beli Bareng! Pesanan Anda telah ditambahkan ke keranjang grup.');
+                        setShowGroupBuyModal(false);
+                      }}
+                      className="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold hover:bg-emerald-700 transition-colors"
+                    >
+                      Gabung Grup
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mock Group 2 */}
+                <div className="border border-stone-200 rounded-[24px] p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h5 className="font-black text-lg italic text-black">Grup Mbak Siti</h5>
+                      <p className="text-sm text-stone-500 flex items-center gap-1 mt-1">
+                        <Clock size={14} /> Berangkat dalam 5 hari
+                      </p>
+                    </div>
+                    <span className="bg-stone-100 text-stone-600 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                      Kapasitas 30%
+                    </span>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm font-bold text-stone-600 mb-2">
+                      <span>Terkumpul: 3kg</span>
+                      <span>Target: 10kg</span>
+                    </div>
+                    <div className="w-full bg-stone-100 rounded-full h-3">
+                      <div className="bg-stone-400 h-3 rounded-full" style={{ width: '30%' }}></div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-6 pt-6 border-t border-stone-100">
+                    <div>
+                      <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Estimasi Ongkir</p>
+                      <p className="text-xl font-black text-black">Rp 35.000 <span className="text-sm font-medium line-through text-stone-300">Rp 100.000</span></p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        alert('Berhasil bergabung dengan grup Beli Bareng! Pesanan Anda telah ditambahkan ke keranjang grup.');
+                        setShowGroupBuyModal(false);
+                      }}
+                      className="bg-black text-white px-6 py-3 rounded-full font-bold hover:bg-stone-800 transition-colors"
+                    >
+                      Gabung Grup
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4">
+                  <p className="text-stone-500 font-medium mb-4">Tidak menemukan grup yang cocok?</p>
+                  <button className="text-black font-black uppercase tracking-widest text-sm hover:underline underline-offset-8">
+                    + Buat Grup Baru
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

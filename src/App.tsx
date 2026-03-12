@@ -50,7 +50,7 @@ function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-8">
+          <nav className="hidden xl:flex items-center gap-6">
             <Link to="/" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Katalog</Link>
             <Link to="/about" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Tentang Kami</Link>
             <Link to="/stories" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Cerita</Link>
@@ -101,7 +101,7 @@ function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button 
-              className="md:hidden p-3 hover:bg-stone-100 rounded-full transition-all"
+              className="xl:hidden p-3 hover:bg-stone-100 rounded-full transition-all"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -117,7 +117,7 @@ function Navbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-white border-b border-stone-100 p-4 space-y-4"
+            className="xl:hidden bg-white border-b border-stone-100 p-4 space-y-4"
           >
             <Link to="/" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Katalog</Link>
             <Link to="/about" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Tentang Kami</Link>
@@ -168,7 +168,7 @@ function Home() {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1544441893-675973e31d85?q=80&w=1920&auto=format&fit=crop" 
-            alt="Papua Background" 
+            alt="" 
             className="w-full h-full object-cover opacity-30"
             referrerPolicy="no-referrer"
           />
