@@ -154,7 +154,7 @@ function Home() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  const categories = ['Semua', 'Kriya', 'Fashion', 'Seni', 'Makanan', 'Hasil Bumi'];
+  const categories = ['Semua', 'Kriya & Kerajinan', 'Fashion & Kain', 'Seni & Ukiran', 'Makanan & Minuman', 'Hasil Bumi'];
   const sortOptions = [
     { id: 'terbaru', label: 'Terbaru' },
     { id: 'termurah', label: 'Harga Terendah' },
