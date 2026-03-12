@@ -25,7 +25,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const savedCart = localStorage.getItem('pace_cart');
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+        }
       } catch (e) {
         console.error('Failed to parse cart', e);
       }
