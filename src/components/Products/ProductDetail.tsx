@@ -168,7 +168,7 @@ export default function ProductDetail() {
                   ))}
                 </div>
                 <p className="text-stone-700 mb-4">"{review.comment}"</p>
-                <p className="text-sm font-bold text-stone-400 uppercase tracking-widest">{review.userName}</p>
+                <p className="text-sm font-bold text-stone-400 uppercase tracking-widest">{review.user_name}</p>
               </div>
             ))}
           </div>

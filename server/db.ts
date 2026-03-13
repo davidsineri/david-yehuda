@@ -7,6 +7,15 @@ export const db = new Database(dbPath);
 
 // Initialize tables
 db.exec(`
+  CREATE TABLE IF NOT EXISTS shops (
+    id TEXT PRIMARY KEY,
+    user_id TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    logo_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
     name TEXT,
@@ -14,42 +23,42 @@ db.exec(`
     price INTEGER,
     image_url TEXT,
     category TEXT,
-    sellerId TEXT,
+    shop_id TEXT,
     stock INTEGER DEFAULT 10,
     rating REAL DEFAULT 0,
-    reviewsCount INTEGER DEFAULT 0
+    reviews_count INTEGER DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS reviews (
     id TEXT PRIMARY KEY,
-    productId TEXT,
-    userName TEXT,
+    product_id TEXT,
+    user_name TEXT,
     rating INTEGER,
     comment TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS posts (
     id TEXT PRIMARY KEY,
-    userName TEXT,
+    user_name TEXT,
     content TEXT,
     likes INTEGER DEFAULT 0,
-    commentsCount INTEGER DEFAULT 0,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    comments_count INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS orders (
     id TEXT PRIMARY KEY,
-    userId TEXT,
+    user_id TEXT,
     total INTEGER,
     status TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS order_items (
     id TEXT PRIMARY KEY,
-    orderId TEXT,
-    productId TEXT,
+    order_id TEXT,
+    product_id TEXT,
     name TEXT,
     price INTEGER,
     quantity INTEGER,
@@ -60,7 +69,13 @@ db.exec(`
 // Seed data if empty
 const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
 if (count.count === 0) {
-  const insertProduct = db.prepare('INSERT INTO products (id, name, description, price, image_url, category, sellerId, rating, reviewsCount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  // Seed Shops
+  const insertShop = db.prepare('INSERT INTO shops (id, user_id, name, description) VALUES (?, ?, ?, ?)');
+  insertShop.run('shop1', 'user1', 'Noken Papua Jaya', 'Toko kerajinan tangan asli Papua');
+  insertShop.run('shop2', 'user2', 'Kopi Pegunungan', 'Hasil bumi terbaik dari pegunungan tengah');
+  insertShop.run('shop3', 'user3', 'Seni Asmat', 'Ukiran kayu otentik dari suku Asmat');
+
+  const insertProduct = db.prepare('INSERT INTO products (id, name, description, price, image_url, category, shop_id, rating, reviews_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
   
   const initialProducts = [
     {
@@ -70,9 +85,9 @@ if (count.count === 0) {
       price: 450000,
       image_url: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop',
       category: 'Kriya',
-      sellerId: 'seller1',
+      shop_id: 'shop1',
       rating: 4.8,
-      reviewsCount: 24
+      reviews_count: 24
     },
     {
       id: '2',
@@ -81,9 +96,9 @@ if (count.count === 0) {
       price: 120000,
       image_url: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=800&auto=format&fit=crop',
       category: 'Hasil Bumi',
-      sellerId: 'seller2',
+      shop_id: 'shop2',
       rating: 4.9,
-      reviewsCount: 56
+      reviews_count: 56
     },
     {
       id: '3',
@@ -92,9 +107,9 @@ if (count.count === 0) {
       price: 1250000,
       image_url: 'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?q=80&w=800&auto=format&fit=crop',
       category: 'Seni',
-      sellerId: 'seller3',
+      shop_id: 'shop3',
       rating: 5.0,
-      reviewsCount: 12
+      reviews_count: 12
     },
     {
       id: '4',
@@ -103,18 +118,29 @@ if (count.count === 0) {
       price: 850000,
       image_url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop',
       category: 'Fashion',
-      sellerId: 'seller1',
+      shop_id: 'shop1',
       rating: 4.7,
-      reviewsCount: 18
+      reviews_count: 18
+    },
+    {
+      id: '5',
+      name: 'Buah Merah Papua (Minyak)',
+      description: 'Minyak Buah Merah murni hasil perasan buah merah pilihan dari pegunungan tengah Papua. Kaya akan antioksidan.',
+      price: 250000,
+      image_url: 'https://www.greeners.co/wp-content/uploads/2018/03/Flora-Buah-Merah-Buah-Asal-Papua-yang-Jadi-Perhatian-Dunia_02.jpg',
+      category: 'Hasil Bumi',
+      shop_id: 'shop2',
+      rating: 4.9,
+      reviews_count: 42
     }
   ];
 
   for (const p of initialProducts) {
-    insertProduct.run(p.id, p.name, p.description, p.price, p.image_url, p.category, p.sellerId, p.rating, p.reviewsCount);
+    insertProduct.run(p.id, p.name, p.description, p.price, p.image_url, p.category, p.shop_id, p.rating, p.reviews_count);
   }
 
   // Seed some community posts
-  const insertPost = db.prepare('INSERT INTO posts (id, userName, content, likes, commentsCount) VALUES (?, ?, ?, ?, ?)');
+  const insertPost = db.prepare('INSERT INTO posts (id, user_name, content, likes, comments_count) VALUES (?, ?, ?, ?, ?)');
   insertPost.run('p1', 'Yohanes', 'Baru saja menerima Noken pesanan saya. Kualitas anyamannya luar biasa rapi! Bangga pakai produk lokal Papua.', 12, 3);
   insertPost.run('p2', 'Maria', 'Ada yang tau pengrajin ukiran Asmat yang bisa custom ukuran? Saya butuh untuk dekorasi cafe.', 5, 8);
 }

@@ -8,6 +8,8 @@ export interface Product {
   image_url: string;
   created_at: string;
   story?: string;
+  rating?: number;
+  reviews_count?: number;
 }
 
 export interface Profile {

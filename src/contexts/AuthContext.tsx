@@ -5,8 +5,10 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  shop: any | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshShop: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,14 +16,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [shop, setShop] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchShop = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/shops/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setShop(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch shop:', err);
+    }
+  };
+
+  const refreshShop = async () => {
+    if (user) await fetchShop(user.id);
+  };
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) fetchShop(currentUser.id);
       })
       .catch((err) => {
         console.warn('Supabase session fetch failed:', err);
@@ -33,7 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        fetchShop(currentUser.id);
+      } else {
+        setShop(null);
+      }
       setLoading(false);
     });
 
@@ -47,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, shop, loading, signOut, refreshShop }}>
       {children}
     </AuthContext.Provider>
   );
