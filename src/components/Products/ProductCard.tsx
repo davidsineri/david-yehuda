@@ -24,7 +24,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] bg-stone-50 mb-6">
           <img
-            src={product.name === 'Kain Batik Motif Burung Cendrawasih' ? 'http://www.infobatik.com/wp-content/uploads/2020/12/motif-batik-burung-cendrawasih.jpg' : (product.image_url || 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop')}
+            src={product.image_url || 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             referrerPolicy="no-referrer"
