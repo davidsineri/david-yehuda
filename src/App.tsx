@@ -846,7 +846,7 @@ function Profile() {
                       <div className="space-y-4">
                         {order.items.map((item: any, j: number) => (
                           <div key={j} className="flex items-center gap-4">
-                            <img src={item.image_url} alt={item.name} className="w-16 h-16 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                            <img src={item.image_url || 'https://images.unsplash.com/photo-1590736704728-f4730bb30770?q=80&w=200&auto=format&fit=crop'} alt={item.name} className="w-16 h-16 rounded-xl object-cover" referrerPolicy="no-referrer" />
                             <div className="flex-grow">
                               <h5 className="font-black text-black italic">{item.name}</h5>
                               <p className="text-sm text-stone-500">{item.quantity} x Rp {item.price.toLocaleString('id-ID')}</p>

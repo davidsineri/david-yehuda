@@ -111,7 +111,7 @@ export default function ProductDetail() {
         {/* Product Image */}
         <div className="aspect-square rounded-[40px] overflow-hidden bg-stone-100">
           <img 
-            src={product.image_url} 
+            src={product.image_url || 'https://images.unsplash.com/photo-1590736704728-f4730bb30770?q=80&w=800&auto=format&fit=crop'} 
             alt={product.name} 
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
