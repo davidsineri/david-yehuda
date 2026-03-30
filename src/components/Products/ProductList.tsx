@@ -96,7 +96,7 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
         >
           <div className="relative aspect-square rounded-[32px] overflow-hidden bg-stone-100 mb-4">
             <img 
-              src={product.image_url || 'https://images.unsplash.com/photo-1590736704728-f4730bb30770?q=80&w=800&auto=format&fit=crop'} 
+              src={product.image_url} 
               alt={product.name} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               referrerPolicy="no-referrer"
