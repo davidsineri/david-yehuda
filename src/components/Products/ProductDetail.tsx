@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Heart, Star, ArrowLeft, Users, MapPin, Clock } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../components/ui/Toast';
 import { Product } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -19,6 +20,8 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
@@ -158,12 +161,21 @@ export default function ProductDetail() {
                 <button 
                   onClick={() => {
                     for (let i = 0; i < quantity; i++) addToCart(product);
-                    alert('Berhasil ditambahkan ke keranjang!');
+                    showToast('Produk berhasil ditambahkan ke keranjang!');
                   }}
                   className="flex-1 bg-black text-white py-4 rounded-full font-bold text-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingBag size={20} />
                   Tambah ke Keranjang
+                </button>
+                <button 
+                  onClick={() => {
+                    for (let i = 0; i < quantity; i++) addToCart(product);
+                    navigate('/checkout');
+                  }}
+                  className="flex-1 bg-emerald-600 text-white py-4 rounded-full font-bold text-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  Beli Sekarang
                 </button>
                 <button 
                   onClick={() => {

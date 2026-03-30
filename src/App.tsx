@@ -7,6 +7,7 @@ import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } f
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider, useCart } from './contexts/CartContext';
 import { WishlistProvider, useWishlist } from './contexts/WishlistContext';
+import { ToastProvider } from './components/ui/Toast';
 import { motion, AnimatePresence } from 'motion/react';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
@@ -1019,33 +1020,35 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <WishlistProvider>
-          <Router>
-            <div className="min-h-screen bg-white flex flex-col">
-              <Navbar />
-              <main className="flex-grow">
-                <AnimatePresence mode="wait">
-                  <Routes>
-                    <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-                    <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
-                    <Route path="/checkout" element={<PageWrapper><Checkout /></PageWrapper>} />
-                    <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-                    <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-                    <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
-                    <Route path="/stories" element={<PageWrapper><Stories /></PageWrapper>} />
-                    <Route path="/wisata" element={<PageWrapper><Attractions /></PageWrapper>} />
-                    <Route path="/wisata/:id" element={<PageWrapper><AttractionDetail /></PageWrapper>} />
-                    <Route path="/planner" element={<PageWrapper><TravelPlanner /></PageWrapper>} />
-                    <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
-                    <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
-                    <Route path="/seller" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
-                    <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
-                  </Routes>
-                </AnimatePresence>
-              </main>
-              <Footer />
-              <Chatbot />
-            </div>
-          </Router>
+          <ToastProvider>
+            <Router>
+              <div className="min-h-screen bg-white flex flex-col">
+                <Navbar />
+                <main className="flex-grow">
+                  <AnimatePresence mode="wait">
+                    <Routes>
+                      <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+                      <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
+                      <Route path="/checkout" element={<PageWrapper><Checkout /></PageWrapper>} />
+                      <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+                      <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+                      <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+                      <Route path="/stories" element={<PageWrapper><Stories /></PageWrapper>} />
+                      <Route path="/wisata" element={<PageWrapper><Attractions /></PageWrapper>} />
+                      <Route path="/wisata/:id" element={<PageWrapper><AttractionDetail /></PageWrapper>} />
+                      <Route path="/planner" element={<PageWrapper><TravelPlanner /></PageWrapper>} />
+                      <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
+                      <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+                      <Route path="/seller" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
+                      <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+                    </Routes>
+                  </AnimatePresence>
+                </main>
+                <Footer />
+                <Chatbot />
+              </div>
+            </Router>
+          </ToastProvider>
         </WishlistProvider>
       </CartProvider>
     </AuthProvider>

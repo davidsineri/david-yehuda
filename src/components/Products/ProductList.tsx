@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ShoppingBag, Heart, Sparkles } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { useToast } from '../../components/ui/Toast';
 import { Product } from '../../types';
 import { smartSearchProducts } from '../../services/aiService';
 
@@ -21,6 +22,8 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
   
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -132,6 +135,7 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
                 onClick={(e) => {
                   e.preventDefault();
                   addToCart(product);
+                  showToast('Produk berhasil ditambahkan ke keranjang!');
                 }}
                 className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-xl"
                 title="Tambah ke Keranjang"
@@ -167,6 +171,15 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
               <p className="text-sm font-serif italic text-emerald-700 line-clamp-2 leading-relaxed mt-2">"{product.story}"</p>
             )}
           </Link>
+          <button 
+            onClick={() => {
+              addToCart(product);
+              navigate('/checkout');
+            }}
+            className="w-full mt-4 py-3 bg-black text-white rounded-full font-bold hover:bg-stone-800 transition-colors"
+          >
+            Beli Sekarang
+          </button>
         </motion.div>
       ))}
     </div>

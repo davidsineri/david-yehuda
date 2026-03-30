@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { MapPin, ArrowLeft, Share2, Heart, ShoppingBag } from 'lucide-react';
 import { attractions } from '../../data/attractions';
 import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../components/ui/Toast';
 import { Product } from '../../types';
 
 export default function AttractionDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const attraction = attractions.find(a => a.id === id);
   const { addToCart } = useCart();
+  const { showToast } = useToast();
   const [ticketProduct, setTicketProduct] = useState<Product | null>(null);
   const [loadingTicket, setLoadingTicket] = useState(false);
 
@@ -142,13 +145,27 @@ export default function AttractionDetail() {
             </div>
             
             {ticketProduct ? (
-              <button 
-                onClick={() => addToCart(ticketProduct)}
-                className="nike-button px-8 flex items-center gap-3"
-              >
-                <ShoppingBag size={20} />
-                Pesan Tiket Sekarang
-              </button>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    addToCart(ticketProduct);
+                    showToast('Tiket berhasil ditambahkan ke keranjang!');
+                  }}
+                  className="nike-button px-8 flex items-center gap-3"
+                >
+                  <ShoppingBag size={20} />
+                  Tambah ke Keranjang
+                </button>
+                <button 
+                  onClick={() => {
+                    addToCart(ticketProduct);
+                    navigate('/checkout');
+                  }}
+                  className="px-8 py-4 bg-black text-white rounded-full font-bold hover:bg-stone-800 transition-all flex items-center gap-3"
+                >
+                  Beli Sekarang
+                </button>
+              </div>
             ) : (
               <Link to="/" className="nike-button px-12">Jelajahi Produk Lokal</Link>
             )}

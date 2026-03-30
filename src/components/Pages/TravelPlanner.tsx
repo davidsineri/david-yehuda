@@ -3,8 +3,10 @@ import { motion } from 'motion/react';
 import { Map, Calendar, Wallet, Sparkles, Loader2, ArrowRight, ShoppingBag } from 'lucide-react';
 import { generateTravelItinerary, smartSearchProducts } from '../../services/aiService';
 import ReactMarkdown from 'react-markdown';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../../types';
+import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../components/ui/Toast';
 
 export default function TravelPlanner() {
   const [days, setDays] = useState(3);
@@ -14,6 +16,9 @@ export default function TravelPlanner() {
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('/api/products')
@@ -172,7 +177,18 @@ export default function TravelPlanner() {
                             <div className="p-4">
                               <p className="text-xs font-black text-stone-400 uppercase tracking-widest mb-1">{product.category}</p>
                               <h4 className="font-bold text-black dark:text-white line-clamp-1 mb-2">{product.name}</h4>
-                              <p className="text-emerald-600 font-black">Rp {product.price.toLocaleString('id-ID')}</p>
+                              <p className="text-emerald-600 font-black mb-4">Rp {product.price.toLocaleString('id-ID')}</p>
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  addToCart(product);
+                                  showToast('Produk berhasil ditambahkan ke keranjang!');
+                                  navigate('/checkout');
+                                }}
+                                className="w-full py-2 bg-black text-white rounded-xl font-bold text-sm hover:bg-stone-800 transition-colors"
+                              >
+                                Beli Sekarang
+                              </button>
                             </div>
                           </Link>
                         ))}
