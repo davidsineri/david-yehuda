@@ -20,8 +20,10 @@ import AdminDashboard from './components/Pages/AdminDashboard';
 import LetterGenerator from './components/Pages/LetterGenerator';
 import Attractions from './components/Pages/Attractions';
 import AttractionDetail from './components/Pages/AttractionDetail';
+import TravelPlanner from './components/Pages/TravelPlanner';
+import Chatbot from './components/Chatbot';
 import Footer from './components/Layout/Footer';
-import { ShoppingBag, User, LogOut, Menu, X, Settings, Package, Heart, Moon, Sun } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Menu, X, Settings, Package, Heart, Moon, Sun, Sparkles } from 'lucide-react';
 import { ReactNode, useState, useEffect } from 'react';
 
 function Navbar() {
@@ -58,6 +60,9 @@ function Navbar() {
             <Link to="/about" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Tentang Kami</Link>
             <Link to="/stories" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Cerita</Link>
             <Link to="/wisata" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Wisata</Link>
+            <Link to="/planner" className="text-sm font-bold text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-1">
+              <Sparkles size={14} /> AI Planner
+            </Link>
             <Link to="/community" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Komunitas</Link>
           </nav>
 
@@ -127,6 +132,9 @@ function Navbar() {
             <Link to="/about" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Tentang Kami</Link>
             <Link to="/stories" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Cerita</Link>
             <Link to="/wisata" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Wisata</Link>
+            <Link to="/planner" className="block text-lg font-bold text-emerald-600 flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+              <Sparkles size={20} /> AI Planner
+            </Link>
             <Link to="/community" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Komunitas</Link>
             {!user && (
               <Link to="/login" className="block text-lg font-bold text-emerald-600" onClick={() => setIsMenuOpen(false)}>Masuk / Daftar</Link>
@@ -1009,6 +1017,7 @@ export default function App() {
                     <Route path="/stories" element={<PageWrapper><Stories /></PageWrapper>} />
                     <Route path="/wisata" element={<PageWrapper><Attractions /></PageWrapper>} />
                     <Route path="/wisata/:id" element={<PageWrapper><AttractionDetail /></PageWrapper>} />
+                    <Route path="/planner" element={<PageWrapper><TravelPlanner /></PageWrapper>} />
                     <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
                     <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
                     <Route path="/seller" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
@@ -1018,6 +1027,7 @@ export default function App() {
                 </AnimatePresence>
               </main>
               <Footer />
+              <Chatbot />
             </div>
           </Router>
         </WishlistProvider>

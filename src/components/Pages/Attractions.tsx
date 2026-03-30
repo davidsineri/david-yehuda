@@ -127,9 +127,13 @@ export default function Attractions() {
       <section className="max-w-4xl mx-auto px-4 mt-32 text-center">
         <div className="w-20 h-1 bg-emerald-500 mx-auto mb-12"></div>
         <h2 className="text-4xl font-black text-black dark:text-white italic mb-8">MENJAGA WARISAN ALAM</h2>
-        <p className="text-xl font-serif italic text-stone-600 dark:text-stone-400 leading-relaxed">
+        <p className="text-xl font-serif italic text-stone-600 dark:text-stone-400 leading-relaxed mb-12">
           "Kami percaya bahwa pariwisata bukan hanya tentang melihat tempat baru, tetapi tentang memahami jiwa dari tanah tersebut. Melalui PACE, kami mengajak Anda untuk menjelajahi Papua dengan rasa hormat terhadap alam dan budaya setempat."
         </p>
+        <Link to="/planner" className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-full font-bold hover:bg-emerald-700 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.35 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+          Rencanakan Liburan dengan AI
+        </Link>
       </section>
     </div>
   );
