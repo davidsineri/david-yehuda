@@ -18,6 +18,8 @@ import Stories from './components/Layout/Stories';
 import SellerDashboard from './components/Pages/SellerDashboard';
 import AdminDashboard from './components/Pages/AdminDashboard';
 import LetterGenerator from './components/Pages/LetterGenerator';
+import Attractions from './components/Pages/Attractions';
+import AttractionDetail from './components/Pages/AttractionDetail';
 import Footer from './components/Layout/Footer';
 import { ShoppingBag, User, LogOut, Menu, X, Settings, Package, Heart, Moon, Sun } from 'lucide-react';
 import { ReactNode, useState, useEffect } from 'react';
@@ -55,6 +57,7 @@ function Navbar() {
             <Link to="/" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Katalog</Link>
             <Link to="/about" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Tentang Kami</Link>
             <Link to="/stories" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Cerita</Link>
+            <Link to="/wisata" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Wisata</Link>
             <Link to="/community" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Komunitas</Link>
           </nav>
 
@@ -123,6 +126,7 @@ function Navbar() {
             <Link to="/" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Katalog</Link>
             <Link to="/about" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Tentang Kami</Link>
             <Link to="/stories" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Cerita</Link>
+            <Link to="/wisata" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Wisata</Link>
             <Link to="/community" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Komunitas</Link>
             {!user && (
               <Link to="/login" className="block text-lg font-bold text-emerald-600" onClick={() => setIsMenuOpen(false)}>Masuk / Daftar</Link>
@@ -1003,6 +1007,8 @@ export default function App() {
                     <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
                     <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
                     <Route path="/stories" element={<PageWrapper><Stories /></PageWrapper>} />
+                    <Route path="/wisata" element={<PageWrapper><Attractions /></PageWrapper>} />
+                    <Route path="/wisata/:id" element={<PageWrapper><AttractionDetail /></PageWrapper>} />
                     <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
                     <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
                     <Route path="/seller" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
