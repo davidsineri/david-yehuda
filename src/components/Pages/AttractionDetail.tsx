@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MapPin, ArrowLeft, Share2, Heart } from 'lucide-react';
+import { MapPin, ArrowLeft, Share2, Heart, ShoppingBag } from 'lucide-react';
 import { attractions } from '../../data/attractions';
+import { useCart } from '../../contexts/CartContext';
+import { Product } from '../../types';
 
 export default function AttractionDetail() {
   const { id } = useParams<{ id: string }>();
   const attraction = attractions.find(a => a.id === id);
+  const { addToCart } = useCart();
+  const [ticketProduct, setTicketProduct] = useState<Product | null>(null);
+  const [loadingTicket, setLoadingTicket] = useState(false);
+
+  useEffect(() => {
+    if (attraction?.productId) {
+      setLoadingTicket(true);
+      fetch(`/api/products/${attraction.productId}`)
+        .then(res => res.json())
+        .then(data => setTicketProduct(data))
+        .catch(err => console.error(err))
+        .finally(() => setLoadingTicket(false));
+    }
+  }, [attraction]);
 
   if (!attraction) {
     return (
@@ -82,14 +98,31 @@ export default function AttractionDetail() {
           <div className="mt-20 pt-12 border-t border-stone-100 dark:border-stone-800 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><line x1="3" y1="13" x2="21" y2="13"/></svg>
               </div>
               <div>
-                <p className="text-xs font-black text-stone-400 uppercase tracking-widest">Status</p>
-                <p className="text-lg font-bold text-black dark:text-white">Destinasi Terverifikasi</p>
+                <p className="text-xs font-black text-stone-400 uppercase tracking-widest">Tiket & Paket Wisata</p>
+                {loadingTicket ? (
+                  <p className="text-lg font-bold text-black dark:text-white">Memuat harga...</p>
+                ) : ticketProduct ? (
+                  <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">Rp {ticketProduct.price.toLocaleString('id-ID')}</p>
+                ) : (
+                  <p className="text-lg font-bold text-black dark:text-white">Tersedia di Lokasi</p>
+                )}
               </div>
             </div>
-            <Link to="/" className="nike-button px-12">Jelajahi Produk Lokal</Link>
+            
+            {ticketProduct ? (
+              <button 
+                onClick={() => addToCart(ticketProduct)}
+                className="nike-button px-8 flex items-center gap-3"
+              >
+                <ShoppingBag size={20} />
+                Pesan Tiket Sekarang
+              </button>
+            ) : (
+              <Link to="/" className="nike-button px-12">Jelajahi Produk Lokal</Link>
+            )}
           </div>
         </div>
       </section>
@@ -110,6 +143,40 @@ export default function AttractionDetail() {
                </div>
             </div>
          </div>
+      </section>
+
+      {/* Interactive Map Section */}
+      <section className="max-w-7xl mx-auto px-4 mt-32 relative z-20">
+        <div className="bg-stone-100 dark:bg-stone-900 rounded-[60px] p-8 md:p-16 border border-stone-200 dark:border-stone-800">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
+            <div>
+              <span className="inline-block px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-[0.4em] rounded-full mb-6">
+                Peta Lokasi
+              </span>
+              <h2 className="text-4xl md:text-6xl font-black text-black dark:text-white italic uppercase tracking-tighter">
+                TEMUKAN <br />
+                <span className="text-emerald-600 dark:text-emerald-500">LOKASI</span>
+              </h2>
+            </div>
+            <p className="text-stone-600 dark:text-stone-400 font-medium max-w-md text-lg">
+              Jelajahi area sekitar {attraction.name} dan rencanakan rute perjalanan Anda dengan mudah.
+            </p>
+          </div>
+          
+          <div className="w-full h-[400px] md:h-[500px] rounded-[40px] overflow-hidden shadow-2xl bg-stone-200 dark:bg-stone-800 relative">
+            <iframe 
+              width="100%" 
+              height="100%" 
+              frameBorder="0" 
+              scrolling="no" 
+              marginHeight={0} 
+              marginWidth={0} 
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(attraction.name + ' Papua')}&t=m&z=12&output=embed&iwloc=near`}
+              title={`Peta Lokasi ${attraction.name}`}
+              className="absolute inset-0 w-full h-full filter dark:invert-[90%] dark:hue-rotate-180 dark:contrast-150"
+            ></iframe>
+          </div>
+        </div>
       </section>
     </div>
   );
