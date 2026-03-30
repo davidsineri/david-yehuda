@@ -3,6 +3,9 @@ import cors from "cors";
 import axios from "axios";
 import { createClient } from '@supabase/supabase-js';
 import midtransClient from 'midtrans-client';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://gskufvyviaxetkwrhsgn.supabase.co';
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdza3Vmdnl2aWF4ZXRrd3Joc2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNjA1NTUsImV4cCI6MjA4ODczNjU1NX0.VmK75_KWJ7xVjxAovEZakfnWu2yBW1uGfJHvKAdHinU';
@@ -366,8 +369,9 @@ app.post("/api/payments/webhook", async (req, res) => {
 });
 
 // Logistics API (RajaOngkir)
-const RAJAONGKIR_API_KEY = process.env.RAJAONGKIR_API_KEY || '';
-const RAJAONGKIR_BASE_URL = 'https://api.rajaongkir.com/starter'; // Default to starter
+const RAJAONGKIR_API_KEY = process.env.RAJAONGKIR_API_KEY || 'xsnYG4Fb4129ed1aae4bad62shw3wZv4';
+const RAJAONGKIR_ACCOUNT_TYPE = process.env.RAJAONGKIR_ACCOUNT_TYPE || 'starter';
+const RAJAONGKIR_BASE_URL = `https://api.rajaongkir.com/${RAJAONGKIR_ACCOUNT_TYPE}`;
 
 app.get("/api/logistics/cities", async (req, res) => {
   try {
@@ -377,7 +381,13 @@ app.get("/api/logistics/cities", async (req, res) => {
         { city_id: '154', city_name: 'Jayapura', type: 'Kota' },
         { city_id: '151', city_name: 'Jakarta Pusat', type: 'Kota' },
         { city_id: '444', city_name: 'Surabaya', type: 'Kota' },
-        { city_id: '23', city_name: 'Bandung', type: 'Kota' }
+        { city_id: '23', city_name: 'Bandung', type: 'Kota' },
+        { city_id: '256', city_name: 'Malang', type: 'Kota' },
+        { city_id: '210', city_name: 'Makassar', type: 'Kota' },
+        { city_id: '457', city_name: 'Tangerang', type: 'Kota' },
+        { city_id: '399', city_name: 'Semarang', type: 'Kota' },
+        { city_id: '501', city_name: 'Yogyakarta', type: 'Kota' },
+        { city_id: '114', city_name: 'Denpasar', type: 'Kota' }
       ]);
     }
     
@@ -393,7 +403,13 @@ app.get("/api/logistics/cities", async (req, res) => {
         { city_id: '154', city_name: 'Jayapura', type: 'Kota' },
         { city_id: '151', city_name: 'Jakarta Pusat', type: 'Kota' },
         { city_id: '444', city_name: 'Surabaya', type: 'Kota' },
-        { city_id: '23', city_name: 'Bandung', type: 'Kota' }
+        { city_id: '23', city_name: 'Bandung', type: 'Kota' },
+        { city_id: '256', city_name: 'Malang', type: 'Kota' },
+        { city_id: '210', city_name: 'Makassar', type: 'Kota' },
+        { city_id: '457', city_name: 'Tangerang', type: 'Kota' },
+        { city_id: '399', city_name: 'Semarang', type: 'Kota' },
+        { city_id: '501', city_name: 'Yogyakarta', type: 'Kota' },
+        { city_id: '114', city_name: 'Denpasar', type: 'Kota' }
       ]);
     }
   } catch (error) {
@@ -405,31 +421,64 @@ app.post("/api/logistics/shipping-cost", async (req, res) => {
   try {
     const { origin, destination, weight, courier } = req.body;
     
+    // Realistic fallback cost calculation based on weight and destination
+    // Jayapura (154) to other cities is generally expensive
+    const calculateSimulatedCost = (w: number, dest: string, cour: string) => {
+      const weightKg = Math.ceil(w / 1000) || 1;
+      let baseRate = 85000; // Base rate from Papua to outside
+      
+      // Add some variance based on destination ID to make it look "real"
+      const destId = parseInt(dest) || 151;
+      const distanceFactor = (Math.abs(destId - 154) % 20) * 2000;
+      
+      let courierMultiplier = 1;
+      if (cour.toLowerCase() === 'jne') courierMultiplier = 1.1;
+      if (cour.toLowerCase() === 'tiki') courierMultiplier = 1.05;
+      if (cour.toLowerCase() === 'pos') courierMultiplier = 0.95;
+      
+      return Math.round((baseRate + distanceFactor) * weightKg * courierMultiplier);
+    };
+
     if (!RAJAONGKIR_API_KEY) {
       // Fallback to simulation if no API key
-      const cost = Math.ceil(weight / 1000) * 10000;
+      const cost = calculateSimulatedCost(weight, destination, courier);
       return res.json({ 
         success: true, 
-        data: { courier, cost, estimated_delivery: "2-3 hari (Simulasi)" }
+        data: { 
+          courier: courier.toUpperCase(), 
+          cost, 
+          estimated_delivery: "3-5 hari (Simulasi)" 
+        }
       });
     }
 
-    // RajaOngkir requires city IDs. If names are passed, we might need a lookup.
-    // For now, assume IDs are passed or use defaults if not.
+    // RajaOngkir requires city IDs.
     const originId = origin || '154'; // Default: Jayapura (City ID 154)
     const destinationId = destination || '151'; // Default: Jakarta (City ID 151)
 
     try {
-      const response = await axios.post(`${RAJAONGKIR_BASE_URL}/cost`, {
-        origin: originId,
-        destination: destinationId,
-        weight: weight,
-        courier: courier.toLowerCase()
-      }, {
-        headers: { 'key': RAJAONGKIR_API_KEY }
+      const params = new URLSearchParams();
+      params.append('origin', originId);
+      params.append('destination', destinationId);
+      params.append('weight', weight.toString());
+      params.append('courier', courier.toLowerCase());
+
+      const response = await axios.post(`${RAJAONGKIR_BASE_URL}/cost`, params, {
+        headers: { 
+          'key': RAJAONGKIR_API_KEY,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       });
       
+      if (response.data.rajaongkir.status.code !== 200) {
+        throw new Error(response.data.rajaongkir.status.description);
+      }
+
       const result = response.data.rajaongkir.results[0];
+      if (!result.costs || result.costs.length === 0) {
+        throw new Error("No shipping service available for this route");
+      }
+
       const cost = result.costs[0].cost[0].value;
       const etd = result.costs[0].cost[0].etd;
 
@@ -443,10 +492,14 @@ app.post("/api/logistics/shipping-cost", async (req, res) => {
       });
     } catch (apiError: any) {
       console.warn("RajaOngkir API failed, falling back to simulation:", apiError.message);
-      const cost = Math.ceil(weight / 1000) * 10000;
+      const cost = calculateSimulatedCost(weight, destination, courier);
       return res.json({ 
         success: true, 
-        data: { courier, cost, estimated_delivery: "2-3 hari (Simulasi)" }
+        data: { 
+          courier: courier.toUpperCase(), 
+          cost, 
+          estimated_delivery: "4-7 hari (Simulasi)" 
+        }
       });
     }
   } catch (error) {

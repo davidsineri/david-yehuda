@@ -398,6 +398,7 @@ function Checkout() {
     if (hasPhysicalItems) {
       const fetchShippingCost = async () => {
         setLoadingShipping(true);
+        console.log('Fetching shipping cost for:', { destinationCity, totalWeight, shippingMethod });
         try {
           const res = await fetch('/api/logistics/shipping-cost', {
             method: 'POST',
@@ -409,20 +410,43 @@ function Checkout() {
               courier: shippingMethod
             })
           });
+          
           if (res.ok) {
             const result = await res.json();
-            setDynamicShippingCost(result.data.cost);
+            console.log('Shipping cost result:', result);
+            if (result.success && result.data) {
+              setDynamicShippingCost(result.data.cost);
+            } else {
+              throw new Error('Invalid response format');
+            }
+          } else {
+            const errorData = await res.json();
+            console.error('Shipping API error response:', errorData);
+            throw new Error('Server responded with error');
           }
         } catch (err) {
           console.error('Failed to fetch shipping cost:', err);
-          const totalWeightKg = Math.ceil(totalWeight / 1000) || 1;
-          const fallbackCost = shippingMethod === 'pos' ? 100000 : 110000;
-          setDynamicShippingCost(fallbackCost * totalWeightKg);
+          // Fallback calculation (matching backend simulation logic for consistency)
+          const weightKg = Math.ceil(totalWeight / 1000) || 1;
+          const destId = parseInt(destinationCity) || 151;
+          const distanceFactor = (Math.abs(destId - 154) % 20) * 2000;
+          let baseRate = 85000;
+          
+          let courierMultiplier = 1;
+          if (shippingMethod === 'jne') courierMultiplier = 1.1;
+          if (shippingMethod === 'tiki') courierMultiplier = 1.05;
+          if (shippingMethod === 'pos') courierMultiplier = 0.95;
+          
+          const fallbackCost = Math.round((baseRate + distanceFactor) * weightKg * courierMultiplier);
+          console.log('Using fallback shipping cost:', fallbackCost);
+          setDynamicShippingCost(fallbackCost);
         } finally {
           setLoadingShipping(false);
         }
       };
       fetchShippingCost();
+    } else {
+      setDynamicShippingCost(0);
     }
   }, [shippingMethod, totalWeight, hasPhysicalItems, destinationCity]);
 
@@ -662,13 +686,18 @@ function Checkout() {
                 <span>Rp {totalPrice.toLocaleString('id-ID')}</span>
               </div>
               {hasPhysicalItems && (
-                <div className="flex justify-between font-medium text-stone-600 dark:text-stone-400">
-                  <span>Pengiriman ({totalWeightKg}kg)</span>
-                  {loadingShipping ? (
-                    <span className="animate-pulse">Menghitung...</span>
-                  ) : (
-                    <span>Rp {totalShipping.toLocaleString('id-ID')}</span>
-                  )}
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between font-medium text-stone-600 dark:text-stone-400">
+                    <span>Pengiriman ({totalWeightKg}kg)</span>
+                    {loadingShipping ? (
+                      <span className="animate-pulse">Menghitung...</span>
+                    ) : (
+                      <span>Rp {totalShipping.toLocaleString('id-ID')}</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                    Ke: {cities.find(c => c.city_id === destinationCity)?.city_name || 'Jakarta Pusat'}
+                  </div>
                 </div>
               )}
               {tipAmount > 0 && (
