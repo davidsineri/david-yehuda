@@ -366,7 +366,14 @@ function Checkout() {
   const [shippingMethod, setShippingMethod] = useState<string>('jne');
   const [dynamicShippingCost, setDynamicShippingCost] = useState<number>(0);
   const [loadingShipping, setLoadingShipping] = useState(false);
-  const [cities, setCities] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([
+    { city_id: '154', city_name: 'Jayapura', type: 'Kota' },
+    { city_id: '151', city_name: 'Jakarta Pusat', type: 'Kota' },
+    { city_id: '444', city_name: 'Surabaya', type: 'Kota' },
+    { city_id: '23', city_name: 'Bandung', type: 'Kota' },
+    { city_id: '210', city_name: 'Makassar', type: 'Kota' },
+    { city_id: '430', city_name: 'Sorong', type: 'Kota' }
+  ]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [destinationCity, setDestinationCity] = useState<string>('151'); // Jakarta
   const [tipAmount, setTipAmount] = useState<number>(0);
@@ -610,17 +617,12 @@ function Checkout() {
                     className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl px-4 py-3 font-bold text-sm outline-none focus:ring-2 focus:ring-emerald-500 dark:text-white"
                     disabled={loadingCities}
                   >
-                    {loadingCities ? (
-                      <option>Memuat daftar kota...</option>
-                    ) : cities.length > 0 ? (
-                      cities.map((city) => (
-                        <option key={city.city_id} value={city.city_id}>
-                          {city.type} {city.city_name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="151">Jakarta Pusat</option>
-                    )}
+                    {cities.map((city) => (
+                      <option key={city.city_id} value={city.city_id}>
+                        {city.type} {city.city_name}
+                      </option>
+                    ))}
+                    {loadingCities && <option disabled>Memuat daftar lengkap...</option>}
                   </select>
                 </div>
 
