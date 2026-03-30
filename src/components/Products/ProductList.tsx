@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ShoppingBag, Heart } from 'lucide-react';
+import { ShoppingBag, Heart, Sparkles } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { Product } from '../../types';
+import { smartSearchProducts } from '../../services/aiService';
 
 interface ProductListProps {
   searchTerm: string;
@@ -16,6 +17,7 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSmartSearching, setIsSmartSearching] = useState(false);
   
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -25,18 +27,32 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
       setLoading(true);
       setError(null);
       try {
+        // Fetch all products first if we are doing smart search, or just fetch filtered
         const params = new URLSearchParams();
-        if (searchTerm) params.append('search', searchTerm);
         if (filterCategory && filterCategory !== 'Semua') params.append('category', filterCategory);
         if (sortBy) params.append('sort', sortBy);
-
-        const response = await fetch(`/api/products?${params.toString()}`);
-        if (!response.ok) throw new Error('Gagal memuat produk');
         
-        const data = await response.json();
-        setProducts(data);
+        // If no search term, use backend filtering
+        if (!searchTerm) {
+          const response = await fetch(`/api/products?${params.toString()}`);
+          if (!response.ok) throw new Error('Gagal memuat produk');
+          const data = await response.json();
+          setProducts(data);
+          setIsSmartSearching(false);
+        } else {
+          // If there is a search term, fetch all (or category filtered) and use AI
+          setIsSmartSearching(true);
+          const response = await fetch(`/api/products?${params.toString()}`);
+          if (!response.ok) throw new Error('Gagal memuat produk');
+          const allData = await response.json();
+          
+          const smartResults = await smartSearchProducts(searchTerm, allData);
+          setProducts(smartResults);
+          setIsSmartSearching(false);
+        }
       } catch (err: any) {
         setError(err.message || 'Terjadi kesalahan');
+        setIsSmartSearching(false);
       } finally {
         setLoading(false);
       }
@@ -45,21 +61,29 @@ export default function ProductList({ searchTerm, sortBy, filterCategory }: Prod
     // Debounce search
     const timer = setTimeout(() => {
       fetchProducts();
-    }, 300);
+    }, 800); // Increased debounce for AI search
 
     return () => clearTimeout(timer);
   }, [searchTerm, sortBy, filterCategory]);
 
-  if (loading) {
+  if (loading || isSmartSearching) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-          <div key={n} className="animate-pulse">
-            <div className="bg-stone-200 rounded-[32px] aspect-square mb-4"></div>
-            <div className="h-6 bg-stone-200 rounded-full w-3/4 mb-2"></div>
-            <div className="h-4 bg-stone-200 rounded-full w-1/2"></div>
+      <div>
+        {isSmartSearching && (
+          <div className="flex items-center justify-center gap-2 mb-8 text-emerald-600 font-medium animate-pulse">
+            <Sparkles size={20} />
+            <span>AI sedang mencari produk terbaik untuk Anda...</span>
           </div>
-        ))}
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+            <div key={n} className="animate-pulse">
+              <div className="bg-stone-200 rounded-[32px] aspect-square mb-4"></div>
+              <div className="h-6 bg-stone-200 rounded-full w-3/4 mb-2"></div>
+              <div className="h-4 bg-stone-200 rounded-full w-1/2"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

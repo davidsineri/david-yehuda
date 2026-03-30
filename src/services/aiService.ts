@@ -103,3 +103,70 @@ Buat rencana per hari (Hari 1, Hari 2, dst) yang mencakup aktivitas, destinasi, 
 
   return response.text || 'Maaf, saya gagal membuat itinerary saat ini. Silakan coba lagi.';
 }
+
+export async function smartSearchProducts(query: string, products: any[]): Promise<any[]> {
+  if (!query || products.length === 0) return products;
+
+  const systemInstruction = `Anda adalah mesin pencari cerdas untuk e-commerce produk Papua bernama PACE.
+Tugas Anda adalah menerima query pencarian dari pengguna (yang mungkin berupa kalimat, konteks, atau deskripsi tidak langsung) dan mengembalikan daftar ID produk yang paling relevan dari katalog yang diberikan.
+Katalog Produk:
+${products.map(p => `ID: ${p.id} | Nama: ${p.name} | Kategori: ${p.category} | Deskripsi: ${p.description}`).join('\n')}
+
+Output HARUS berupa array JSON berisi ID produk yang relevan, diurutkan dari yang paling relevan. Contoh output: ["id1", "id2"]. Jangan tambahkan teks lain selain array JSON.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Query pencarian: "${query}"`,
+      config: {
+        systemInstruction,
+        temperature: 0.1,
+        responseMimeType: "application/json",
+      }
+    });
+
+    const resultText = response.text || '[]';
+    const matchedIds = JSON.parse(resultText);
+    
+    if (Array.isArray(matchedIds) && matchedIds.length > 0) {
+      // Return products that match the IDs, maintaining the order returned by AI
+      return matchedIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+    }
+    return []; // No matches found by AI
+  } catch (error) {
+    console.error("Smart search failed:", error);
+    // Fallback to basic text search if AI fails
+    const lowerQuery = query.toLowerCase();
+    return products.filter(p => 
+      p.name.toLowerCase().includes(lowerQuery) || 
+      p.description.toLowerCase().includes(lowerQuery)
+    );
+  }
+}
+
+export async function generateFormalLetter(recipient: string, subject: string, context: string, senderName: string): Promise<string> {
+  const systemInstruction = `Anda adalah asisten ahli administrasi pemerintahan dan bisnis di Indonesia.
+Tugas Anda adalah membuat draf surat resmi (formal) yang ditujukan kepada pejabat daerah atau instansi pemerintah (khususnya di wilayah Papua).
+Surat harus menggunakan bahasa Indonesia yang sangat baku, sopan, dan sesuai dengan standar tata naskah dinas pemerintahan.
+Sertakan tempat dan tanggal (kosongkan atau beri placeholder), nomor surat (placeholder), lampiran, dan perihal.
+Gunakan format Markdown.`;
+
+  const prompt = `Tolong buatkan draf surat resmi dengan detail berikut:
+- Ditujukan kepada: ${recipient}
+- Perihal: ${subject}
+- Konteks/Isi yang ingin disampaikan: ${context}
+- Nama Pengirim/Pemohon: ${senderName}
+
+Buat surat selengkap mungkin dari kop surat (placeholder), tanggal, alamat tujuan, salam pembuka, isi, penutup, hingga tanda tangan.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: prompt,
+    config: {
+      systemInstruction,
+      temperature: 0.4,
+    }
+  });
+
+  return response.text || 'Maaf, saya gagal membuat draf surat saat ini. Silakan coba lagi.';
+}

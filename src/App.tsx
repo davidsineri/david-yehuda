@@ -63,6 +63,9 @@ function Navbar() {
             <Link to="/planner" className="text-sm font-bold text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-1">
               <Sparkles size={14} /> AI Planner
             </Link>
+            <Link to="/surat" className="text-sm font-bold text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-1">
+              <Sparkles size={14} /> AI Surat
+            </Link>
             <Link to="/community" className="text-sm font-bold text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-widest">Komunitas</Link>
           </nav>
 
@@ -134,6 +137,9 @@ function Navbar() {
             <Link to="/wisata" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Wisata</Link>
             <Link to="/planner" className="block text-lg font-bold text-emerald-600 flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
               <Sparkles size={20} /> AI Planner
+            </Link>
+            <Link to="/surat" className="block text-lg font-bold text-emerald-600 flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+              <Sparkles size={20} /> AI Surat
             </Link>
             <Link to="/community" className="block text-lg font-bold text-black" onClick={() => setIsMenuOpen(false)}>Komunitas</Link>
             {!user && (
@@ -1018,6 +1024,7 @@ export default function App() {
                     <Route path="/wisata" element={<PageWrapper><Attractions /></PageWrapper>} />
                     <Route path="/wisata/:id" element={<PageWrapper><AttractionDetail /></PageWrapper>} />
                     <Route path="/planner" element={<PageWrapper><TravelPlanner /></PageWrapper>} />
+                    <Route path="/surat" element={<PageWrapper><LetterGenerator /></PageWrapper>} />
                     <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
                     <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
                     <Route path="/seller" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
