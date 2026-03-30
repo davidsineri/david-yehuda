@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MessageSquare, Heart, Share2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Community() {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,12 +27,19 @@ export default function Community() {
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPost.trim()) return;
+    if (!user) {
+      alert('Silakan login untuk memposting.');
+      return;
+    }
 
     try {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost, userName: 'User' })
+        body: JSON.stringify({ 
+          content: newPost, 
+          userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User' 
+        })
       });
       if (res.ok) {
         setNewPost('');

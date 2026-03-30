@@ -66,7 +66,7 @@ export default function ProductDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
-          userName: user.name,
+          userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonim',
           rating: newReview.rating,
           comment: newReview.comment
         })

@@ -99,13 +99,25 @@ app.post("/api/posts", async (req, res) => {
 // 4. Orders
 app.get("/api/orders", async (req, res) => {
   const { userId } = req.query;
-  const { data: orders, error } = await supabase.from('orders').select('*').eq('user_id', userId || 'guest').order('created_at', { ascending: false });
+  const { data: orders, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', userId || 'guest')
+    .order('created_at', { ascending: false });
+    
   if (error) return res.status(500).json({ error: error.message });
   
   if (orders) {
     for (let order of orders) {
-      const { data: items } = await supabase.from('order_items').select('*').eq('order_id', order.id);
-      order.items = items || [];
+      // In the new schema, items are under shop_orders
+      const { data: shopOrders } = await supabase
+        .from('shop_orders')
+        .select('*, order_items(*)')
+        .eq('order_id', order.id);
+      
+      order.shop_orders = shopOrders || [];
+      // Flatten items for backward compatibility if needed in UI
+      order.items = (shopOrders || []).flatMap(so => so.order_items || []);
     }
   }
   return res.json(orders || []);
@@ -113,33 +125,63 @@ app.get("/api/orders", async (req, res) => {
 
 app.post("/api/orders", async (req, res) => {
   const { userId, total, items } = req.body;
-  const id = Math.random().toString(36).substr(2, 9).toUpperCase();
+  const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
   
-  const orderItems = items.map((item: any) => ({
-    id: Math.random().toString(36).substr(2, 9),
-    order_id: id,
-    product_id: item.id,
-    name: item.name,
-    price: item.price,
-    quantity: item.quantity,
-    image_url: item.image_url
-  }));
-
+  // 1. Create the main order
   const { error: orderError } = await supabase.from('orders').insert({
-    id, user_id: userId || 'guest', total, status: 'PENDING_PAYMENT'
+    id: orderId, 
+    user_id: userId || 'guest', 
+    total_amount: total, 
+    status: 'PENDING'
   });
   
   if (orderError) return res.status(500).json({ error: orderError.message });
 
-  const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
-  if (itemsError) return res.status(500).json({ error: itemsError.message });
+  // 2. Group items by shop_id to create shop_orders
+  const itemsByShop: { [key: string]: any[] } = {};
+  items.forEach((item: any) => {
+    const shopId = item.shop_id || 'default_shop';
+    if (!itemsByShop[shopId]) itemsByShop[shopId] = [];
+    itemsByShop[shopId].push(item);
+  });
+
+  for (const [shopId, shopItems] of Object.entries(itemsByShop)) {
+    const shopOrderId = Math.random().toString(36).substr(2, 9).toUpperCase();
+    const subtotal = shopItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    
+    // Create shop order
+    const { error: soError } = await supabase.from('shop_orders').insert({
+      id: shopOrderId,
+      order_id: orderId,
+      shop_id: shopId === 'default_shop' ? null : shopId,
+      subtotal: subtotal,
+      shipping_cost: 0, // Simplified for now
+      total: subtotal,
+      status: 'PENDING'
+    });
+
+    if (soError) continue;
+
+    // Create order items
+    const orderItems = shopItems.map((item: any) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      shop_order_id: shopOrderId,
+      product_id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image_url: item.image_url
+    }));
+
+    await supabase.from('order_items').insert(orderItems);
+  }
   
-  return res.json({ success: true, order_id: id });
+  return res.json({ success: true, order_id: orderId });
 });
 
 // 5. Shops
 app.get("/api/shops/:userId", async (req, res) => {
-  const { data, error } = await supabase.from('shops').select('*').eq('user_id', req.params.userId).single();
+  const { data, error } = await supabase.from('shops').select('*').eq('user_id', req.params.userId).maybeSingle();
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data || null);
 });
@@ -168,24 +210,21 @@ app.get("/api/seller/products", async (req, res) => {
 
 app.get("/api/seller/orders", async (req, res) => {
   const { shopId } = req.query;
-  const { data: orders, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  if (!shopId) return res.status(400).json({ error: "Shop ID is required" });
+
+  const { data: shopOrders, error } = await supabase
+    .from('shop_orders')
+    .select('*, order_items(*)')
+    .eq('shop_id', shopId)
+    .order('created_at', { ascending: false });
+
   if (error) return res.status(500).json({ error: error.message });
-  
-  if (orders) {
-    for (let order of orders) {
-      const { data: items } = await supabase.from('order_items').select('*').eq('order_id', order.id);
-      order.items = items || [];
-    }
-  }
-  return res.json(orders || []);
+  return res.json(shopOrders || []);
 });
 
 app.put("/api/seller/orders/:id/status", async (req, res) => {
-  const { status, resi } = req.body;
-  const updateData: any = { status };
-  if (resi) updateData.resi = resi;
-  
-  const { error } = await supabase.from('orders').update(updateData).eq('id', req.params.id);
+  const { status } = req.body;
+  const { error } = await supabase.from('shop_orders').update({ status }).eq('id', req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   return res.json({ success: true });
 });
