@@ -47,11 +47,15 @@ export default function TravelPlanner() {
       }
 
     } catch (error: any) {
-      console.error(error);
-      if (error.message?.includes('API_KEY_INVALID') || !process.env.GEMINI_API_KEY) {
-        setItinerary('Maaf, AI Planner belum dikonfigurasi dengan benar (API Key tidak ditemukan). Silakan hubungi admin atau cek pengaturan environment variables.');
+      console.error("TravelPlanner error:", error);
+      const errorMessage = error.message || String(error);
+      
+      if (errorMessage.includes('API_KEY_INVALID') || !process.env.GEMINI_API_KEY) {
+        setItinerary('Maaf, AI Planner belum dikonfigurasi dengan benar (API Key tidak ditemukan atau tidak valid). Silakan hubungi admin atau cek pengaturan environment variables.');
+      } else if (errorMessage.includes('QUOTA_EXCEEDED')) {
+        setItinerary('Maaf, kuota AI Planner telah habis untuk hari ini. Silakan coba lagi besok.');
       } else {
-        setItinerary('Maaf, terjadi kesalahan saat membuat rencana perjalanan. Silakan coba lagi.');
+        setItinerary(`Maaf, terjadi kesalahan saat membuat rencana perjalanan: ${errorMessage}. Silakan coba lagi.`);
       }
     } finally {
       setIsLoading(false);

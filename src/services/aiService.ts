@@ -1,11 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { attractions } from "../data/attractions";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-if (!GEMINI_API_KEY) {
-  console.warn("GEMINI_API_KEY is missing. AI features will not work until it's set in environment variables.");
-}
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+// Helper to get AI instance with current API key
+const getAI = () => {
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY is missing in process.env");
+  } else {
+    console.log(`GEMINI_API_KEY found: ${apiKey.substring(0, 4)}...`);
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 const RAJAONGKIR_CITIES = [
   { city_id: '154', city_name: 'Jayapura', type: 'Kota' },
@@ -24,6 +29,7 @@ const RAJAONGKIR_CITIES = [
 export async function generateProductDescription(base64Image: string): Promise<string> {
   if (!base64Image) return '';
   
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-image",
     contents: {
@@ -45,6 +51,7 @@ export async function generateProductDescription(base64Image: string): Promise<s
 }
 
 export async function getPackagingAdvice(question: string): Promise<string> {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Anda adalah asisten ahli pengemasan dan pengiriman barang untuk penjual online. Berikan saran yang aman, efisien, dan ramah lingkungan untuk pertanyaan berikut: ${question}`,
@@ -54,6 +61,7 @@ export async function getPackagingAdvice(question: string): Promise<string> {
 }
 
 export async function chatWithAgent(message: string, history: {role: string, text: string}[] = [], productsContext: any[] = []): Promise<string> {
+  const ai = getAI();
   const systemInstruction = `Anda adalah "PACE Multi-Agent AI", asisten virtual cerdas untuk aplikasi e-commerce dan pariwisata Papua bernama PACE.
 Anda memiliki 3 persona/agen yang bekerja sama:
 1. Agen Pariwisata: Ahli merekomendasikan destinasi wisata Papua, menyusun itinerary, dan memberikan tips perjalanan.
@@ -100,6 +108,7 @@ Tugas Anda:
 }
 
 export async function generateTravelItinerary(days: number, interests: string, budget: string): Promise<string> {
+  const ai = getAI();
   const systemInstruction = `Anda adalah "PACE Travel Planner AI", ahli perencana perjalanan khusus untuk destinasi Papua.
 Buatkan itinerary (rencana perjalanan) yang detail, menarik, dan realistis berdasarkan input pengguna.
 Sertakan rekomendasi destinasi wisata dari daftar berikut jika relevan:
@@ -119,21 +128,32 @@ Gunakan format Markdown yang rapi dengan heading, bullet points, dan estimasi bi
 
 Buat rencana per hari (Hari 1, Hari 2, dst) yang mencakup aktivitas, destinasi, dan rekomendasi kuliner/oleh-oleh.`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      systemInstruction,
-      temperature: 0.7,
-    }
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      }
+    });
 
-  return response.text || 'Maaf, saya gagal membuat itinerary saat ini. Silakan coba lagi.';
+    if (!response.text) {
+      console.error("Gemini API returned empty response:", response);
+      throw new Error("Empty response from AI");
+    }
+
+    return response.text;
+  } catch (error: any) {
+    console.error("Gemini API Error in generateTravelItinerary:", error);
+    throw error;
+  }
 }
 
 export async function smartSearchProducts(query: string, products: any[]): Promise<any[]> {
   if (!query || products.length === 0) return products;
 
+  const ai = getAI();
   const systemInstruction = `Anda adalah mesin pencari cerdas untuk e-commerce produk Papua bernama PACE.
 Tugas Anda adalah menerima query pencarian dari pengguna (yang mungkin berupa kalimat, konteks, atau deskripsi tidak langsung) dan mengembalikan daftar ID produk yang paling relevan dari katalog yang diberikan.
 Katalog Produk:

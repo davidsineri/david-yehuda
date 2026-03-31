@@ -48,8 +48,15 @@ function Navbar() {
     }
   }, [isDarkMode]);
 
+  const isVercel = window.location.hostname.includes('vercel.app');
+
   return (
     <header className="bg-white/80 dark:bg-stone-950/80 backdrop-blur-xl sticky top-0 z-50 border-b border-stone-100 dark:border-stone-800 transition-colors duration-300">
+      {isVercel && (
+        <div className="bg-amber-500 text-white text-center py-1 text-xs font-bold">
+          PERHATIAN: Anda sedang membuka versi Vercel. Fitur AI mungkin tidak berfungsi. Gunakan URL AI Studio untuk fitur lengkap.
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20 gap-4">
           {/* Logo */}
