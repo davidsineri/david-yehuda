@@ -164,10 +164,18 @@ export default function TravelPlanner() {
                   
                   {recommendedProducts.length > 0 && (
                     <div className="mt-12 pt-12 border-t border-stone-100 dark:border-stone-800">
-                      <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-6 flex items-center gap-2">
-                        <Sparkles className="text-emerald-500" size={24} />
-                        Rekomendasi AI untuk Anda
-                      </h3>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <h3 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
+                          <Sparkles className="text-emerald-500" size={24} />
+                          Rekomendasi AI untuk Anda
+                        </h3>
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 flex items-center gap-3">
+                          <ShoppingBag className="text-emerald-600" size={20} />
+                          <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
+                            Beli oleh-oleh di PACE, kirim langsung ke rumah Anda dengan RajaOngkir!
+                          </p>
+                        </div>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         {recommendedProducts.map(product => (
                           <Link to={`/product/${product.id}`} key={product.id} className="group block bg-stone-50 dark:bg-stone-950 rounded-3xl overflow-hidden border border-stone-100 dark:border-stone-800 hover:border-emerald-500 transition-colors">

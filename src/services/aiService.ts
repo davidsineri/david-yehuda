@@ -3,6 +3,20 @@ import { attractions } from "../data/attractions";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
+const RAJAONGKIR_CITIES = [
+  { city_id: '154', city_name: 'Jayapura', type: 'Kota' },
+  { city_id: '151', city_name: 'Jakarta Pusat', type: 'Kota' },
+  { city_id: '444', city_name: 'Surabaya', type: 'Kota' },
+  { city_id: '23', city_name: 'Bandung', type: 'Kota' },
+  { city_id: '210', city_name: 'Makassar', type: 'Kota' },
+  { city_id: '430', city_name: 'Sorong', type: 'Kota' },
+  { city_id: '278', city_name: 'Medan', type: 'Kota' },
+  { city_id: '327', city_name: 'Palembang', type: 'Kota' },
+  { city_id: '17', city_name: 'Balikpapan', type: 'Kota' },
+  { city_id: '292', city_name: 'Merauke', type: 'Kabupaten' },
+  { city_id: '293', city_name: 'Mimika', type: 'Kabupaten' }
+];
+
 export async function generateProductDescription(base64Image: string): Promise<string> {
   if (!base64Image) return '';
   
@@ -48,10 +62,15 @@ ${attractions.map(a => `- ${a.name} (${a.location}): ${a.category}`).join('\n')}
 Konteks Produk Lokal yang tersedia:
 ${productsContext.map(p => `- ${p.name} (Rp ${p.price}): ${p.category}`).join('\n')}
 
+Konteks Pengiriman (RajaOngkir) yang tersedia:
+Aplikasi mendukung pengiriman dari Jayapura ke kota-kota berikut:
+${RAJAONGKIR_CITIES.map(c => `- ${c.type} ${c.city_name}`).join('\n')}
+
 Tugas Anda:
 - Jawab pertanyaan pengguna dengan ramah, antusias, dan menggunakan bahasa Indonesia yang baik (boleh diselingi sapaan khas Papua seperti "Pace", "Mace", "Kaka").
 - Jika pengguna mencari produk/wisata, rekomendasikan dari daftar konteks di atas.
 - Jika pengguna meminta itinerary, buatkan rencana perjalanan yang menarik dan sertakan rekomendasi produk lokal untuk oleh-oleh.
+- Jika pengguna bertanya tentang pengiriman, informasikan bahwa PACE mendukung pengiriman ke kota-kota besar di Indonesia melalui JNE, POS, dan TIKI.
 - Format jawaban menggunakan Markdown agar rapi (gunakan bullet points, bold, dll).`;
 
   const contents: any[] = history.map(h => ({
@@ -81,6 +100,10 @@ export async function generateTravelItinerary(days: number, interests: string, b
 Buatkan itinerary (rencana perjalanan) yang detail, menarik, dan realistis berdasarkan input pengguna.
 Sertakan rekomendasi destinasi wisata dari daftar berikut jika relevan:
 ${attractions.map(a => `- ${a.name} (${a.location})`).join('\n')}
+
+Informasi Tambahan:
+- PACE mendukung pengiriman oleh-oleh langsung ke kota asal pengguna (seperti ${RAJAONGKIR_CITIES.slice(1, 5).map(c => c.city_name).join(', ')}, dll) melalui integrasi RajaOngkir.
+- Beritahu pengguna bahwa mereka bisa berbelanja oleh-oleh di aplikasi PACE dan barang akan dikirim dengan aman.
 
 Sertakan juga rekomendasi oleh-oleh produk lokal Papua di hari terakhir.
 Gunakan format Markdown yang rapi dengan heading, bullet points, dan estimasi biaya (opsional).`;
