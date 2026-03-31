@@ -3,9 +3,9 @@ import { attractions } from "../data/attractions";
 
 // Helper to get AI instance with current API key
 const getAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY || '';
+  const apiKey = process.env.GEMINI_API_KEY || (import.meta.env && (import.meta.env as any).VITE_GEMINI_API_KEY) || '';
   if (!apiKey) {
-    console.error("GEMINI_API_KEY is missing in process.env");
+    console.error("GEMINI_API_KEY is missing. Please check your environment variables.");
   } else {
     console.log(`GEMINI_API_KEY found: ${apiKey.substring(0, 4)}...`);
   }
@@ -131,7 +131,7 @@ Buat rencana per hari (Hari 1, Hari 2, dst) yang mencakup aktivitas, destinasi, 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: {
         systemInstruction,
         temperature: 0.7,

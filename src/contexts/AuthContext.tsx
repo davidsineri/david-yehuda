@@ -42,14 +42,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        if (currentUser) fetchShop(currentUser.id);
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('Supabase session fetch failed:', error);
+          if (error.message.includes('Refresh Token Not Found')) {
+            supabase.auth.signOut();
+          }
+          setSession(null);
+          setUser(null);
+        } else {
+          const session = data?.session ?? null;
+          setSession(session);
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+          if (currentUser) fetchShop(currentUser.id);
+        }
       })
       .catch((err) => {
-        console.warn('Supabase session fetch failed:', err);
+        console.warn('Supabase session fetch failed (catch):', err);
       })
       .finally(() => {
         setLoading(false);
