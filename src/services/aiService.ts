@@ -1,7 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { attractions } from "../data/attractions";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+if (!GEMINI_API_KEY) {
+  console.warn("GEMINI_API_KEY is missing. AI features will not work until it's set in environment variables.");
+}
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const RAJAONGKIR_CITIES = [
   { city_id: '154', city_name: 'Jayapura', type: 'Kota' },

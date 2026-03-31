@@ -46,9 +46,13 @@ export default function TravelPlanner() {
         setRecommendedProducts(recommendations.slice(0, 3));
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setItinerary('Maaf, terjadi kesalahan saat membuat rencana perjalanan. Silakan coba lagi.');
+      if (error.message?.includes('API_KEY_INVALID') || !process.env.GEMINI_API_KEY) {
+        setItinerary('Maaf, AI Planner belum dikonfigurasi dengan benar (API Key tidak ditemukan). Silakan hubungi admin atau cek pengaturan environment variables.');
+      } else {
+        setItinerary('Maaf, terjadi kesalahan saat membuat rencana perjalanan. Silakan coba lagi.');
+      }
     } finally {
       setIsLoading(false);
     }
